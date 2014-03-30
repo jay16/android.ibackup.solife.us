@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utF-8"?>
+<resources>
+    
+	<color name="gray">#FF808080</color>
+	<color name="white">#FFFFFFFF</color>
+	<color name="blue">#FF0000FF</color>
+	<color name="black">#FF000000</color>
+	<color name="pink">#FFFFC0Cb</color>
+	<color name="red">#FFFF0000</color>
+	<color name="orange">#FFFF8D00</color>
+	<color name="yellow">#FFFFFF00</color>
+	<color name="green">#FF00FF00</color>
+	<color name="lightyellow">#FFFFFFE0</color>
+	<color name="lightblue">#FFE3EEFB</color>
+	<color name="oceanblue">#FF5271A5</color>
+	<color name="lightgreen">#FF96FF00</color>
+	<color name="grassgreen">#FF009600</color>
+	<color name="lightgray">#FFD3D3D3</color>
+	<color name="darkgray">#00535252</color>
+	
+	
+    
+    <color name="full_transparent">#00000000</color>
+    <color name="half_transparent">#aa000000</color>
+    <color name="listitem_transparent">#00000000</color>
+    <color name="listitem_black">#ff000000</color>
+    <color name="listitem_white">#ffffffff</color>
+    <color name="listitem_blue">#0e5986</color>
+    <color name="listitem_gray">#ff9da19e</color>
+    <color name="listitem_green">#ffe3ffc6</color>
+    <color name="listitem_greenyellow">#ff87b869</color>
+    <color name="listitem_yellow">#fffaffbf</color>  
+</resources>
