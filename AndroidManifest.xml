@@ -27,6 +27,7 @@
         <activity android:name="android.backup.solife.us.ui.Main" ></activity>
         <activity android:name="android.backup.solife.us.ui.Sms" ></activity>
         <activity android:name="android.backup.solife.us.ui.Contact" ></activity>
+        <receiver android:name="android.backup.solife.us.recevier.TimerService" ></receiver>
     </application>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

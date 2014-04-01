@@ -87,35 +87,50 @@ public class ContactTb {
 		return rowid;
 	}
 	
+	public long updateContact(long rowId,Integer contactId){
+		SQLiteDatabase db = consumeDatabaseHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put("contact_id", contactId);
+		values.put("sync", true);
+		String[] args = {String.valueOf(rowId)};
+
+        rowId = db.update("contacts", values, "id=?",args);
+        
+		ContactInfo contactInfo = getContactWithId(rowId);
+        Log.w("ContactTB","更新Contact:"+contactInfo.toStr());
+        
+        return rowId;
+	}
+	
 	//取得所有未同步至服务器的记录
 	public ArrayList<ContactInfo> getUnsyncContact() {
 		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
 		Cursor cursor = database.rawQuery("select * from "+TABLE+" where sync = 0", null);
 		
-		ArrayList<ContactInfo> consumeInfos = new ArrayList<ContactInfo>();
+		ArrayList<ContactInfo> contactInfos = new ArrayList<ContactInfo>();
 		if (cursor.getCount() > 0) {
 			for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-				consumeInfos.add(getContactFromCursor(cursor));
+				contactInfos.add(getContactFromCursor(cursor));
 			}
 		}
 		cursor.close();
 		database.close();
-		return consumeInfos;
+		return contactInfos;
 	}
 	
 	public ContactInfo getContactFromCursor(Cursor cursor){
 		ContactInfo contactInfo = new ContactInfo();
-	    
 		try {
-		contactInfo.setIdId(cursor.getLong(cursor.getColumnIndex("id_id")));
-		contactInfo.setPhoneId(cursor.getInt(cursor.getColumnIndex("phone_id")));
-		contactInfo.setContactId(cursor.getInt(cursor.getColumnIndex("contact_id")));
-		contactInfo.setName(cursor.getString(cursor.getColumnIndex("name")));
-		contactInfo.setNumber(cursor.getString(cursor.getColumnIndex("number")));
-		contactInfo.setPhoto(cursor.getBlob(cursor.getColumnIndex("photo")));
-		contactInfo.setType(cursor.getString(cursor.getColumnIndex("type")));
-		contactInfo.setSync(cursor.getLong(cursor.getColumnIndex("sync")));
-		contactInfo.setState(cursor.getString(cursor.getColumnIndex("state")));
+			contactInfo.setId(cursor.getLong(cursor.getColumnIndex("id")));
+			contactInfo.setIdId(cursor.getLong(cursor.getColumnIndex("id_id")));
+			contactInfo.setPhoneId(cursor.getInt(cursor.getColumnIndex("phone_id")));
+			contactInfo.setContactId(cursor.getInt(cursor.getColumnIndex("contact_id")));
+			contactInfo.setName(cursor.getString(cursor.getColumnIndex("name")));
+			contactInfo.setNumber(cursor.getString(cursor.getColumnIndex("number")));
+			contactInfo.setPhoto(cursor.getBlob(cursor.getColumnIndex("photo")));
+			contactInfo.setType(cursor.getString(cursor.getColumnIndex("type")));
+			contactInfo.setSync(cursor.getLong(cursor.getColumnIndex("sync")));
+			contactInfo.setState(cursor.getString(cursor.getColumnIndex("state")));
 		} catch(IllegalStateException e) {
 			Log.w("ContactTb",e.toString());
 		}

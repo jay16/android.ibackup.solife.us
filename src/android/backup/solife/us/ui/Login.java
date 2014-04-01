@@ -15,6 +15,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
 //import org.apache.http.client.methods.HttpPost; 
+import org.apache.commons.httpclient.HttpException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -65,7 +66,7 @@ public class Login extends BaseActivity {
 		
 	    //login
 		buttonSubmit =(Button)findViewById(R.id.login_login_btn); 
-		buttonSubmit.setOnClickListener(button_login_listener); 
+		buttonSubmit.setOnClickListener(loginSubmit_listener); 
     	buttonSubmit.setEnabled(false);
     	buttonSubmit.setClickable(false);
 
@@ -84,7 +85,7 @@ public class Login extends BaseActivity {
 	/*用户登陆
      * 服务器检测用户的账号和密码是否一致，并返回结果
      * */
-	Button.OnClickListener button_login_listener = new Button.OnClickListener(){//创建监听对象  
+	Button.OnClickListener loginSubmit_listener = new Button.OnClickListener(){//创建监听对象  
 		public void onClick(View v){  
         	buttonSubmit.setEnabled(false);
         	buttonSubmit.setClickable(false);
@@ -95,31 +96,29 @@ public class Login extends BaseActivity {
 			loadingDialog.show();
 	    	
 			//登陆用户密码及密码
-			String loginEmail = editTextLoginEmail.getText().toString();
-			String loginPwd   = editTextLoginPwd.getText().toString();
+			final String loginEmail = editTextLoginEmail.getText().toString();
+			final String loginPwd   = editTextLoginPwd.getText().toString();
 			
-    		sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE);	
-            Editor Editor = sharedPreferences.edit();
+    		sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE);
             
-			String [] ret_array = {"0",""};
 			if(NetUtils.hasNetWork(getApplicationContext())) {
-					//NetUtils.validateUserInfo(sharedPreferences,loginEmail,loginPwd);
-			} else {
-				ret_array[0] = "0";
-				ret_array[1] = "\n当前网络不可用";
+				 new Thread() {
+					 public void run() {
+					      NetUtils.validUserInfo(sharedPreferences,loginEmail,loginPwd);
+					 }
+				 }.start();
 			}
 			
 	        String ret_str;
-	        if(ret_array[0].equals("1")){
+	        if(sharedPreferences.contains("loginState")
+					&& sharedPreferences.getBoolean("loginState", false)){
 	            ret_str = "登陆成功";	
 				startActivity(new Intent(Login.this,Main.class));
 	        } else {
-	            ret_str = "登陆失败:" +ret_array[1];
+	            ret_str = "登陆失败" ;
 				if(loadingDialog != null) loadingDialog.dismiss();
 		    	loadingProgressBar.setVisibility(View.GONE);
 	        }
-			startActivity(new Intent(Login.this,Main.class));
-			Toast.makeText(Login.this, ret_str, 0).show();
 			
         	buttonSubmit.setEnabled(true);
         	buttonSubmit.setClickable(true);
@@ -144,8 +143,6 @@ public class Login extends BaseActivity {
 	    }
 		 
 	    public void chkLoginState() {
-
-	        
 	    	Boolean email,pwd,network;
 	    	String emailText,pwdText;
 	    	String warnText = "温馨提示:";

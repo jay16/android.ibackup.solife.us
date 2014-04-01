@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
 //引用consume自定义的类包
 
 import android.os.Bundle;
@@ -15,6 +14,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.backup.solife.us.R;
+import android.backup.solife.us.recevier.TimerService;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -65,15 +65,15 @@ public class Loading extends BaseActivity {
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 			
 			//循环定时执行
-			//Intent intent1 =new Intent(getApplication(), TimerService.class);
+			Intent intent1 =new Intent(getApplication(), TimerService.class);
 		    //intent1.setAction(sharedPreferences.getString("current_user_email", ""));
-		    //PendingIntent sender=PendingIntent.getBroadcast(getApplication(), 0, intent1, 0);
+		    PendingIntent sender=PendingIntent.getBroadcast(getApplication(), 0, intent1, 0);
 		    //开始时间
-		    //long now =SystemClock.elapsedRealtime();
+		    long now =SystemClock.elapsedRealtime();
 		    //long now = System.currentTimeMillis();  
 
-		    //AlarmManager am=(AlarmManager)getSystemService(ALARM_SERVICE);//5秒一个周期，不停的发送广播
-		    //am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, now, 600000, sender);
+		    AlarmManager am=(AlarmManager)getSystemService(ALARM_SERVICE);//5秒一个周期，不停的发送广播
+		    am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, now, 600000, sender);
 		} else {
 			intent = new Intent(Loading.this, Login.class);
 		}

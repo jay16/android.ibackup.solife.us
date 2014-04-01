@@ -12,9 +12,15 @@ public class ContactInfo {
 	  private byte[] photo;
 	  //信息来源: sim,phone
 	  private String type;
-	private Long sync,idId;
+	private long id,sync,idId;
 	private String state;
 
+	public void setId(long Id) {
+		this.id = Id;
+	}
+	public long getId() {
+		return this.id;
+	}
 	public void setIdId(Long IdId) {
 		this.idId = IdId;
 	}
