@@ -13,7 +13,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="android.backup.solife.us.ui.Loading"
+            android:name="android.ibackup.solife.us.ui.Loading"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:theme="@android:style/Theme.Light.NoTitleBar" >
@@ -23,11 +23,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="android.backup.solife.us.ui.Login" ></activity>
-        <activity android:name="android.backup.solife.us.ui.Main" ></activity>
-        <activity android:name="android.backup.solife.us.ui.Sms" ></activity>
-        <activity android:name="android.backup.solife.us.ui.Contact" ></activity>
-        <receiver android:name="android.backup.solife.us.recevier.TimerService" ></receiver>
+        <activity android:name="android.ibackup.solife.us.ui.Login" ></activity>
+        <activity android:name="android.ibackup.solife.us.ui.Main" ></activity>
+        <activity android:name="android.ibackup.solife.us.ui.Sms" ></activity>
+        <activity android:name="android.ibackup.solife.us.ui.Contact" ></activity>
+        <receiver android:name="android.ibackup.solife.us.recevier.TimerService" ></receiver>
     </application>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />

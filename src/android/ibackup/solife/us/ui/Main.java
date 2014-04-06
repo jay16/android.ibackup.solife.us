@@ -1,14 +1,31 @@
-package android.backup.solife.us.ui;
+package android.ibackup.solife.us.ui;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
+import org.apache.commons.httpclient.HttpException;
+import org.apache.http.HttpStatus;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.annotation.SuppressLint;
 import android.backup.solife.us.R;
-import android.backup.solife.us.db.ContactTb;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.ibackup.solife.us.api.ApiClient;
+import android.ibackup.solife.us.db.ContactTb;
+import android.ibackup.solife.us.db.SmsTb;
+import android.ibackup.solife.us.util.AppException;
+import android.ibackup.solife.us.util.NetUtils;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.StrictMode;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract.CommonDataKinds.Photo;
 import android.util.Log;
@@ -16,7 +33,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+@SuppressLint("NewApi")
 public class Main extends BaseActivity {
+	private Context context;
 	private Button sms_btn;
 	private Button phone_contact_btn;
 	private TextView textview1;
@@ -27,15 +46,43 @@ public class Main extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		initControls();
+		if (android.os.Build.VERSION.SDK_INT > 9) {
+		    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+		    StrictMode.setThreadPolicy(policy);
+		}
+		context = this;
+		try {
+			initControls();
+		} catch (HttpException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
     @Override
     protected void onResume() {
     	super.onResume();
-		initControls();
+		context = this;
+		try {
+			initControls();
+		} catch (HttpException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
-	public void initControls() {
+	public void initControls() throws HttpException, IOException, JSONException {
 		textview1 = (TextView)findViewById(R.id.warningText);
 		sms_btn = (Button) findViewById(R.id.button1);
 		sms_btn.setOnClickListener(sms_btn_listener);
@@ -73,25 +120,31 @@ public class Main extends BaseActivity {
 		  os += "\nSDK_INT:" + Build.VERSION.SDK_INT;
 		  //Firmware/OS 版本号
 		  os += "\nRELEASE:" + Build.VERSION.RELEASE; 
-	    ContactTb contactTb;
-	    contactTb = ContactTb.getContactTb(getApplication());
-	    Long maxId = (long)0;
-	    Integer count = 0;
-	    Integer count1 = 0;
+	    //ContactTb contactTb = ContactTb.getContactTb(getApplication());
+	    //SmsTb smsTb = SmsTb.getSmsTb(getApplication());
+	    Integer count1 = 0,count2 = 0, count3 = 0, count4 = 0;
 	    try {
-	    	maxId = contactTb.getMaxId();
-	    	count = contactTb.getCount();
-			ContentResolver resolver = getApplication().getContentResolver();
-			Cursor phoneCursor = resolver.query(Phone.CONTENT_URI,PHONES_PROJECTION, null, null, null); 
-			
-			count1 = phoneCursor.getCount();
+	    	//count1 = contactTb.getCount("all");
+	    	//count2 = contactTb.getCount("yes");
+	    	//count3 = smsTb.getCount("all");
+	    	//count4 = smsTb.getCount("yes");
 	    } catch (IllegalStateException e){
 	    	Log.w("Contact",e.toString());
 	    }
-	    os += "\nid_id:" + maxId;
-	    os += "\ncount:" + count;
-	    os += "\ncount1:" + count1;
+	    os += "\nContactCount:" + count1 + "/" +count2;
+	    os += "\nSMSCount:" + count3 + "/" + count4;
 		textview1.setText(os);
+
+       new Thread() {
+    	   public void run(){
+    		   SharedPreferences prefer = getSharedPreferences("config", Context.MODE_PRIVATE);
+			   Integer phoneId = prefer.getInt("PhoneId", -1);
+			   ApiClient.insertContacts(context, phoneId);
+			//ApiClient.insertSms(context, phoneId);
+			//ApiClient.postContact(context);
+			//ApiClient.postSms(context);
+    	   }
+       }.start();
 	}
 
 	Button.OnClickListener sms_btn_listener = new Button.OnClickListener(){//创建监听对象  

@@ -1,4 +1,4 @@
-package android.backup.solife.us.entity;
+package android.ibackup.solife.us.entity;
 
 import android.graphics.Bitmap;
 

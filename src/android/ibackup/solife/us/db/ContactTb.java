@@ -1,11 +1,11 @@
-package android.backup.solife.us.db;
+package android.ibackup.solife.us.db;
 
 import java.util.ArrayList;
-import android.backup.solife.us.entity.ContactInfo;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.ibackup.solife.us.entity.ContactInfo;
 import android.util.Log;
 /**
  * 消费记录实体表
@@ -18,12 +18,12 @@ public class ContactTb {
 	private static final String TABLE = "contacts";
 
 	private Context context;
-	public ConsumeDatabaseHelper consumeDatabaseHelper;
+	public IbackupDatabaseHelper ibackupDatabaseHelper;
 	static ContactTb contactTb;
 
 	private ContactTb(Context context) {
 		this.context = context;
-		this.consumeDatabaseHelper = new ConsumeDatabaseHelper(context);
+		this.ibackupDatabaseHelper = new IbackupDatabaseHelper(context);
 	}
 
 	public static ContactTb getContactTb(Context context) {
@@ -34,9 +34,16 @@ public class ContactTb {
 		return contactTb;
 	}
 	
-	public Integer getCount() {
-		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+	public Integer getCount(String type) {
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		String sql = "select * from " + TABLE;
+		if(type.equals("all")) {
+			
+		} else if(type.equals("yes")) {
+			sql += " where sync = 1";
+		} else if(type.equals("no")) {
+			sql += " where sync = 0";
+		}
 		Cursor cursor = database.rawQuery(sql, null);
 	    Integer count = cursor.getCount();
 		cursor.close();
@@ -44,7 +51,7 @@ public class ContactTb {
 		return count;
 	}
 	public ArrayList<ContactInfo> getAllContact() {
-		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		String sql = "select * from " + TABLE;
 		Cursor cursor = database.rawQuery(sql, null);
 	
@@ -60,17 +67,18 @@ public class ContactTb {
 	}
 	// 插入一笔记录
 	public long insertContact(ContactInfo contactInfo) {
-		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		database.beginTransaction();
 
 		ContentValues values = new ContentValues();
 		if(contactInfo.getIdId()>0)    values.put("id_id", contactInfo.getIdId());
 		if(contactInfo.getPhoneId()>0) values.put("phone_id", contactInfo.getPhoneId());
 		if(contactInfo.getContactId()>0) values.put("contact_id", contactInfo.getContactId());
-		if(contactInfo.getNumber().length()>0) values.put("number", contactInfo.getNumber());
+		if(contactInfo.getNumber() != null && contactInfo.getNumber().length()>0) 
+			values.put("number", contactInfo.getNumber());
 		if(contactInfo.getName().length()>0) values.put("name", contactInfo.getName());
 		values.put("type", contactInfo.getType());
-		values.put("photo", contactInfo.getPhoto());
+		//values.put("photo", contactInfo.getPhoto());
 		//是否与服务器数据已同步
 		values.put("sync", contactInfo.getSync());
 		values.put("state", contactInfo.getState());
@@ -88,13 +96,13 @@ public class ContactTb {
 	}
 	
 	public long updateContact(long rowId,Integer contactId){
-		SQLiteDatabase db = consumeDatabaseHelper.getWritableDatabase();
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		ContentValues values = new ContentValues();
 		values.put("contact_id", contactId);
 		values.put("sync", true);
 		String[] args = {String.valueOf(rowId)};
-
-        rowId = db.update("contacts", values, "id=?",args);
+        rowId = database.update(TABLE, values, "id=?",args);
+        //database.close();
         
 		ContactInfo contactInfo = getContactWithId(rowId);
         Log.w("ContactTB","更新Contact:"+contactInfo.toStr());
@@ -104,7 +112,7 @@ public class ContactTb {
 	
 	//取得所有未同步至服务器的记录
 	public ArrayList<ContactInfo> getUnsyncContact() {
-		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		Cursor cursor = database.rawQuery("select * from "+TABLE+" where sync = 0", null);
 		
 		ArrayList<ContactInfo> contactInfos = new ArrayList<ContactInfo>();
@@ -139,8 +147,8 @@ public class ContactTb {
 	}
 	
 	public Long getMaxId() {
-		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
-		String sql = "select max(id_id) from " + TABLE;
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
+		String sql = "select max(id_id) as id_id from " + TABLE;
 		Cursor cursor = database.rawQuery(sql, null);
 	    Long rowId;
 	    
@@ -155,7 +163,7 @@ public class ContactTb {
 		return rowId;
 	}
 	public ContactInfo getContactWithId(long rowId) {
-	    SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+	    SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		Cursor cursor = database.rawQuery("select * from " + TABLE +" where id= "+rowId, null);
 		ContactInfo contactInfo = new ContactInfo();
 		if (cursor != null) {
@@ -166,14 +174,17 @@ public class ContactTb {
 		database.close();
 		return contactInfo;
 	}
-	public Integer getContactCountWithIdId(long idId) {
-	    SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
-		Cursor cursor = database.rawQuery("select * from " + TABLE +" where id_id= "+idId, null);
+	public Integer getContactCountWithIdId(long idId, String type) {
+	    SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
+		Cursor cursor = database.rawQuery("select * from " + TABLE +" where id_id= "+idId+" and type='"+type+"'", null);
 		Integer count = 0;
 		try{
 		  if(cursor != null) count = cursor.getCount();
 		} catch(IllegalStateException e){
-			Log.e("getContactWithIdId",e.getMessage());
+			Log.e("getContactCountWithIdId",e.getMessage());
+		} finally {
+			cursor.close();
+			database.close();
 		}
 		cursor.close();
 		database.close();

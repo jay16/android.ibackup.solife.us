@@ -1,52 +1,24 @@
-package android.backup.solife.us.ui;
+package android.ibackup.solife.us.ui;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-//import java.util.HashMap;
-
 import android.backup.solife.us.R;
-import android.backup.solife.us.util.LoadingDialog;
-import android.backup.solife.us.util.NetUtils;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-
-//import org.apache.http.client.methods.HttpPost; 
-import org.apache.commons.httpclient.HttpException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-//import org.json.JSONException;
-
-//import us.solife.consumes.BaseActivity.DataCallback;
-//import us.solife.consumes.db.ConsumeDao;
-//import us.solife.consumes.entity.ConsumeInfo;
-
-
-import android.widget.Toast;
-//import android.os.Bundle;
-//import android.os.Handler;
-//import android.os.Message;
+import android.ibackup.solife.us.api.ApiClient;
+import android.ibackup.solife.us.util.LoadingDialog;
+import android.ibackup.solife.us.util.NetUtils;
+import android.ibackup.solife.us.util.UIHelper;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
 import android.view.View;
-//import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
-//import android.widget.TextView;
 import android.widget.ProgressBar;
 
 public class Login extends BaseActivity {
@@ -99,32 +71,52 @@ public class Login extends BaseActivity {
 			final String loginEmail = editTextLoginEmail.getText().toString();
 			final String loginPwd   = editTextLoginPwd.getText().toString();
 			
-    		sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE);
-            
-			if(NetUtils.hasNetWork(getApplicationContext())) {
-				 new Thread() {
-					 public void run() {
-					      NetUtils.validUserInfo(sharedPreferences,loginEmail,loginPwd);
-					 }
-				 }.start();
-			}
-			
-	        String ret_str;
-	        if(sharedPreferences.contains("loginState")
-					&& sharedPreferences.getBoolean("loginState", false)){
-	            ret_str = "登陆成功";	
-				startActivity(new Intent(Login.this,Main.class));
-	        } else {
-	            ret_str = "登陆失败" ;
-				if(loadingDialog != null) loadingDialog.dismiss();
-		    	loadingProgressBar.setVisibility(View.GONE);
-	        }
-			
+    	    login(loginEmail, loginPwd);
+
+			if(loadingDialog != null) loadingDialog.dismiss();
+	    	loadingProgressBar.setVisibility(View.GONE);
         	buttonSubmit.setEnabled(true);
         	buttonSubmit.setClickable(true);
 		}
 	};
 	
+    //登录验证
+    private void login(final String email, final String password) {
+		final Handler handler = new Handler() {
+			public void handleMessage(Message msg) {
+				if(msg.what == 1){
+					//发送通知广播
+					//UIHelper.sendBroadCast(LoginDialog.this, "user.getNotice()");
+					//提示登陆成功
+					UIHelper.ToastMessage(Login.this, "登陆成功");
+					startActivity(new Intent(Login.this,Main.class));
+					finish();
+				}else if(msg.what == 0){
+					UIHelper.ToastMessage(Login.this, "登陆失败");
+				}
+			}
+		};
+		new Thread(){
+			public void run() {
+				Message msg =new Message();
+				sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE);
+				ApiClient.validUser(sharedPreferences,email,password);
+
+				if (sharedPreferences.contains("loginState")
+				  && sharedPreferences.getBoolean("loginState", false)) {
+					msg.what = 1;//成功
+					msg.obj = null;
+				}else{
+					msg.what = 0;//失败
+					msg.obj = null;
+				}
+				handler.sendMessage(msg);
+			}
+		}.start();
+    }
+    /*
+     * 验证网络、输入内容
+     */
 	private TextWatcher text_watcher = new TextWatcher(){
 		 
 	    @Override
@@ -151,28 +143,19 @@ public class Login extends BaseActivity {
 
             network = NetUtils.hasNetWork(getApplicationContext());
 
-	        Integer n2 = emailText.length();
-	        Integer n1 = n2.toString().length();
-	        String str = n1.toString()+n2.toString()+emailText+pwdText;
-	        String token = Base64.encodeToString(str.getBytes(), Base64.DEFAULT);
             	
-            if(emailText.length()>0 && emailer.matcher(emailText).matches()) {
-               email = true;
-            } else {
-               email = false;
-            }
-            
-            if(pwdText.length()>=6) {
-            	pwd = true;
-            } else {
-            	pwd = false;
-            }
+            email = (emailText.length()>0 && emailer.matcher(emailText).matches() ? true : false);
+            pwd = (pwdText.length() >= 6 ? true : false);
             
             if(!email) warnText += "\n    邮箱格式不正确";
             if(!pwd) warnText += "\n    密码长度至少六位";
             if(!network) warnText += "\n    当前网络不可用";
-            warnText += "\n"+token;
-            warnText += "\n"+str;
+	        //Integer n2 = emailText.length();
+	        //Integer n1 = n2.toString().length();
+	        //String str = n1.toString()+n2.toString()+emailText+pwdText;
+	        //String token = Base64.encodeToString(str.getBytes(), Base64.DEFAULT);
+            //warnText += "\n"+token;
+            //warnText += "\n"+str;
             
             if(network && email && pwd) {
             	buttonSubmit.setEnabled(true);
@@ -181,8 +164,6 @@ public class Login extends BaseActivity {
             	buttonSubmit.setEnabled(false);
             	buttonSubmit.setClickable(false);
             	warningText.setText(warnText);
-            	buttonSubmit.setEnabled(true);
-            	buttonSubmit.setClickable(true);
             }
 	    }
 	};

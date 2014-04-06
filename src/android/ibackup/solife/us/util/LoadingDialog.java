@@ -1,4 +1,4 @@
-package android.backup.solife.us.util;
+package android.ibackup.solife.us.util;
 
 
 import android.app.Dialog;

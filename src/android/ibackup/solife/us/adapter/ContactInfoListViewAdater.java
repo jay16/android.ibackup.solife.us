@@ -1,13 +1,13 @@
-package android.backup.solife.us.adapter;
+package android.ibackup.solife.us.adapter;
 
 import java.util.ArrayList;
 
 import android.backup.solife.us.R;
-import android.backup.solife.us.adapter.SmsInfoListViewAdapter.ViewHolder;
-import android.backup.solife.us.entity.ContactInfo;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.ibackup.solife.us.adapter.SmsInfoListViewAdapter.ViewHolder;
+import android.ibackup.solife.us.entity.ContactInfo;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,7 +64,7 @@ public class ContactInfoListViewAdater extends BaseAdapter {
 			byte[] in = contactInfo.getPhoto();
 			Bitmap bmpout = BitmapFactory.decodeByteArray(in, 0, in.length);  
 			holder.photo.setImageBitmap(bmpout);
-			holder.name.setText(contactInfo.getIdId() + ":" + contactInfo.getName());
+			holder.name.setText(contactInfo.getIdId() + ":" + contactInfo.getName() + "-" +contactInfo.getSync());
 			holder.number.setText(contactInfo.getNumber());
 		} catch (NullPointerException e) {
           Log.w("phoneContact",e.toString());

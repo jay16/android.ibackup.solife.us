@@ -1,7 +1,7 @@
-package android.backup.solife.us.ui;
+package android.ibackup.solife.us.ui;
 
 import android.app.Activity;
-import android.backup.solife.us.app.AppManager;
+import android.ibackup.solife.us.app.AppManager;
 import android.os.Bundle;
 
 /**

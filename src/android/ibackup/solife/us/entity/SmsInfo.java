@@ -1,4 +1,4 @@
-package android.backup.solife.us.entity;
+package android.ibackup.solife.us.entity;
 
 
 /**
@@ -27,9 +27,16 @@ public class SmsInfo {
 	 * 短信类型1是接收到的，2是已发出
 	 */
 	private String type;
-	private Long idId,sync;
+	private Long id, idId,sync;
 	private String state;
 
+
+	public void setId(Long Id) {
+		this.id = Id;
+	}
+	public Long getId() {
+		return this.id;
+	}
 	public void setIdId(Long IdId) {
 		this.idId = IdId;
 	}

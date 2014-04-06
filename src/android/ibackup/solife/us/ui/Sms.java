@@ -1,19 +1,19 @@
-package android.backup.solife.us.ui;
+package android.ibackup.solife.us.ui;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
 import android.backup.solife.us.R;
-import android.backup.solife.us.adapter.SmsInfoListViewAdapter;
-import android.backup.solife.us.db.ContactTb;
-import android.backup.solife.us.db.SmsTb;
-import android.backup.solife.us.entity.SmsInfo;
-import android.backup.solife.us.util.NetUtils;
-import android.backup.solife.us.util.URIs;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.ibackup.solife.us.adapter.SmsInfoListViewAdapter;
+import android.ibackup.solife.us.db.ContactTb;
+import android.ibackup.solife.us.db.SmsTb;
+import android.ibackup.solife.us.entity.SmsInfo;
+import android.ibackup.solife.us.util.NetUtils;
+import android.ibackup.solife.us.util.URIs;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;

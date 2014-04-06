@@ -1,13 +1,12 @@
-package android.backup.solife.us.db;
+package android.ibackup.solife.us.db;
 
 import java.util.ArrayList;
 
-import android.backup.solife.us.entity.ContactInfo;
-import android.backup.solife.us.entity.SmsInfo;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.ibackup.solife.us.entity.SmsInfo;
 import android.util.Log;
 /**
  * 消费记录实体表
@@ -20,12 +19,12 @@ public class SmsTb {
 	private static final String TABLE = "smses";
 
 	private Context context;
-	public ConsumeDatabaseHelper consumeDatabaseHelper;
+	public IbackupDatabaseHelper ibackupDatabaseHelper;
 	static SmsTb smsTb;
 
 	private SmsTb(Context context) {
 		this.context = context;
-		this.consumeDatabaseHelper = new ConsumeDatabaseHelper(context);
+		this.ibackupDatabaseHelper = new IbackupDatabaseHelper(context);
 	}
 
 	public static SmsTb getSmsTb(Context context) {
@@ -38,7 +37,7 @@ public class SmsTb {
 	
 	//取得所有消费记录
 	public ArrayList<SmsInfo> getAllSms() {
-		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		String sql = "select * from " + TABLE + " order by date desc";
 		Cursor cursor = database.rawQuery(sql, null);
 	
@@ -55,9 +54,10 @@ public class SmsTb {
 	
 	// 插入一笔记录
 	public long insertSms(SmsInfo smsInfo) {
-		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+		long rowId = -1;
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		database.beginTransaction();
-        try {
+        Log.w(TABLE,"插入前:" + smsInfo.toStr());
 		ContentValues values = new ContentValues();
 		if(smsInfo.getIdId() > 0) values.put("id_id", smsInfo.getIdId());
 		if(smsInfo.getPhoneId() > 0) values.put("phone_id", smsInfo.getPhoneId());
@@ -65,42 +65,72 @@ public class SmsTb {
 		if(smsInfo.getNumber().length() > 0) values.put("number", smsInfo.getNumber());
 		//if(smsInfo.getName().length() > 0) values.put("name", smsInfo.getName());
 		if(smsInfo.getContent().length() > 0) values.put("content", smsInfo.getContent());
+		if(smsInfo.getType().length() > 0) values.put("type", smsInfo.getType());
 		if(smsInfo.getDate().length() > 0) values.put("date", smsInfo.getDate());
 		//是否与服务器数据已同步
 		values.put("sync", smsInfo.getSync());
 		values.put("state", smsInfo.getState());
-		long rowid = database.insert(TABLE, null, values);
+		rowId = database.insert(TABLE, null, values);
 		//log调试用
-        Log.w(TABLE,"插入数据库动作完成id:["+rowid+"]");
-        } catch(NullPointerException e) {
-        	Log.e("SMSTB","e.getMessage():"+e.getMessage());
-        }
+        Log.w(TABLE,"插入完成id:["+rowId+"]");
+
+        
 		database.setTransactionSuccessful();
 		database.endTransaction();
 		database.close();
 
-		return -1;
+        Log.w("SMS","AfterInsert:"+rowId);
+        
+		return rowId;
+	}
+	
+	public long updateSms(long rowId,Integer smsId){
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put("sms_id", smsId);
+		values.put("sync", true);
+		String[] args = {String.valueOf(rowId)};
+        rowId = database.update(TABLE, values, "id=?",args);
+        //database.close();
+        
+		//SmsInfo smsInfo = getSmsWithId(rowId);
+        //Log.w("SMSTB","更新SMS:"+smsInfo.toStr());
+        
+        return rowId;
+	}
+	public SmsInfo getSmsWithId(long rowId) {
+	    SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
+		Cursor cursor = database.rawQuery("select * from " + TABLE +" where id= "+rowId, null);
+		SmsInfo smsInfo = new SmsInfo();
+		if (cursor != null) {
+			cursor.moveToFirst();
+			smsInfo = getSmsFromCursor(cursor);
+		}
+		cursor.close();
+		database.close();
+		return smsInfo;
 	}
 	
 	//取得所有未同步至服务器的记录
 	public ArrayList<SmsInfo> getUnsyncSms() {
-		SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		Cursor cursor = database.rawQuery("select * from "+TABLE+" where sync = 0", null);
 		
-		ArrayList<SmsInfo> consumeInfos = new ArrayList<SmsInfo>();
+		ArrayList<SmsInfo> smsInfos = new ArrayList<SmsInfo>();
 		if (cursor.getCount() > 0) {
 			for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-				consumeInfos.add(getSmsFromCursor(cursor));
+				smsInfos.add(getSmsFromCursor(cursor));
 			}
 		}
 		cursor.close();
 		database.close();
-		return consumeInfos;
+		return smsInfos;
 	}
 	
 	public SmsInfo getSmsFromCursor(Cursor cursor){
 		SmsInfo smsInfo = new SmsInfo();
 
+		smsInfo.setId(cursor.getLong(cursor.getColumnIndex("id")));
 		smsInfo.setPhoneId(cursor.getInt(cursor.getColumnIndex("phone_id")));
 		smsInfo.setSmsId(cursor.getInt(cursor.getColumnIndex("sms_id")));
 		smsInfo.setIdId(cursor.getLong(cursor.getColumnIndex("id_id")));
@@ -114,27 +144,35 @@ public class SmsTb {
 		
 		return smsInfo;
 	}
-	public SmsInfo getContactWithId(long rowId) {
-	    SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
-		Cursor cursor = database.rawQuery("select * from " + TABLE +" where id= "+rowId, null);
-		SmsInfo smsInfo = new SmsInfo();
-		if (cursor != null) {
-			cursor.moveToFirst();
-			smsInfo = getSmsFromCursor(cursor);
-		}
-		cursor.close();
-		database.close();
-		return smsInfo;
-	}
 	public Integer getSmsCountWithIdId(long idId) {
-	    SQLiteDatabase database = consumeDatabaseHelper.getWritableDatabase();
+	    SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
 		Cursor cursor = database.rawQuery("select * from " + TABLE +" where id_id= "+idId, null);
 		Integer count = 0;
 		try{
 		  if(cursor != null) count = cursor.getCount();
 		} catch(IllegalStateException e){
-			Log.e("getContactWithIdId",e.getMessage());
+			Log.e("getSMSWithIdId",e.getMessage());
+		} finally {
+			cursor.close();
+			database.close();
 		}
+		cursor.close();
+		database.close();
+		return count;
+	}
+	
+	public Integer getCount(String type) {
+		SQLiteDatabase database = ibackupDatabaseHelper.getWritableDatabase();
+		String sql = "select * from " + TABLE;
+		if(type.equals("all")) {
+			
+		} else if(type.equals("yes")) {
+			sql += " where sync = 1";
+		} else if(type.equals("no")) {
+			sql += " where sync = 0";
+		}
+		Cursor cursor = database.rawQuery(sql, null);
+	    Integer count = cursor.getCount();
 		cursor.close();
 		database.close();
 		return count;

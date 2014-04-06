@@ -1,10 +1,10 @@
-package android.backup.solife.us.db;
+package android.ibackup.solife.us.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class ConsumeDatabaseHelper extends SQLiteOpenHelper {
+public class IbackupDatabaseHelper extends SQLiteOpenHelper {
 	private static final String DATABASE_NAME = "backup.db";
 	private static final String DATABASE_TABLE_SMS   = "smses"; 
 	private static final String DATABASE_TABLE_CONTACT = "contacts"; 
@@ -37,7 +37,7 @@ public class ConsumeDatabaseHelper extends SQLiteOpenHelper {
 			"state varchar(100) DEFAULT '')";
 	
 
-	public ConsumeDatabaseHelper(Context context) {
+	public IbackupDatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 		// TODO Auto-generated constructor stub
 	}

@@ -1,4 +1,4 @@
-package android.backup.solife.us.util;
+package android.ibackup.solife.us.util;
 
 import java.io.Serializable;
 
@@ -11,7 +11,8 @@ public class URIs implements Serializable{
 	public static final String SMS_URI_SEND = "content://sms/sent";
 	//²Ý¸åÏä¶ÌÐÅ
 	public static final String SMS_URI_DRAFT = "content://sms/draft";
-	
+	//SIMÍ¨Ñ¶Â¼
+	public static final String CONTACT_SIM_URI = "content://icc/adn";
 	
 	public final static String HOST = "ibackup.solife.us";
 	public final static String HTTP = "http://";
@@ -23,8 +24,8 @@ public class URIs implements Serializable{
 	private final static String URL_API_HOST = HTTP + HOST + URL_SPLITTER;
 	//users
 	public final static String USER_VALIDATE  = URL_API_HOST + "api/users/validate.json";
-	public final static String PHONE_VALIDATE  = URL_API_HOST + "api/phones";
-	public final static String SMS_VALIDATE  = URL_API_HOST + "api/sms";
-	public final static String CONTACT_VALIDATE  = URL_API_HOST + "api/contacts";
+	public final static String PHONE_VALIDATE  = URL_API_HOST + "api/phones.json";
+	public final static String SMS_VALIDATE  = URL_API_HOST + "api/sms.json";
+	public final static String CONTACT_VALIDATE  = URL_API_HOST + "api/contacts.json";
 	
 }
